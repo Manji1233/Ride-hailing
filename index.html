@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>公平网约车治理 APP 原型</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <nav class="topbar" aria-label="主导航">
+      <div class="brand">
+        <span class="brand-mark">衡</span>
+        <div>
+          <strong>公平网约车治理 APP</strong>
+          <small>透明叫车 · 公平派单 · 防压单 · 防一单两卖</small>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button class="ghost" data-scroll="roleWorkbench">角色工作台</button>
+        <button class="ghost" data-scroll="mapSimulation">实时位置</button>
+        <button class="ghost" data-scroll="dashboard">治理看板</button>
+        <button class="ghost" data-scroll="simulation">派单模拟</button>
+        <button class="primary" id="runAuditBtn">运行审计</button>
+      </div>
+    </nav>
+
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Ride-hailing Fair Dispatch OS</p>
+        <h1>让乘客知道为什么等，让司机知道为什么没单。</h1>
+        <p class="lead">围绕“用户打不到车、司机接不到单、压单、派单不公平、民用时段订单外流、一单两买”六类问题，建立可解释派单、订单证据链和监管审计看板。</p>
+        <div class="hero-actions">
+          <button class="primary large" data-scroll="passenger">查看乘客端</button>
+          <button class="secondary large" data-scroll="driver">查看司机端</button>
+        </div>
+      </div>
+      <div class="phone-card" aria-label="乘客叫车状态卡片">
+        <div class="phone-head">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="phone-body">
+          <div class="route">
+            <span>当前位置</span>
+            <strong>金融街地铁站</strong>
+            <span>目的地</span>
+            <strong>市民医院东门</strong>
+          </div>
+          <div class="queue-card">
+            <p>当前排队</p>
+            <strong id="queueRank">第 3 位</strong>
+            <small>预计 4 分钟内进入派单</small>
+          </div>
+          <div class="explain-box warning">
+            <b>压单风险：中</b>
+            <span>订单已创建 112 秒，尚未触发首次派单。</span>
+          </div>
+          <div class="mini-timeline">
+            <span class="done">创建</span>
+            <span class="done">入池</span>
+            <span>派单</span>
+            <span>接驾</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section class="section" id="features">
+      <div class="section-title">
+        <p class="eyebrow">核心功能</p>
+        <h2>把黑箱派单改造成可审计系统</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card"><span class="icon">乘</span><h3>乘客透明叫车</h3><p>展示排队位置、附近司机、预计等待、压单风险和未派单原因。</p></article>
+        <article class="feature-card"><span class="icon">司</span><h3>司机接单公平</h3><p>记录司机可服务但未收到单的时刻，识别司机空转和派单偏置。</p></article>
+        <article class="feature-card"><span class="icon">衡</span><h3>公平派单引擎</h3><p>综合距离、等待、司机空闲、服务均衡和民生时段权重进行派单。</p></article>
+        <article class="feature-card"><span class="icon">链</span><h3>订单证据链</h3><p>记录订单创建、入池、首次派单、司机响应和平台流转全过程。</p></article>
+        <article class="feature-card"><span class="icon">防</span><h3>防一单两买</h3><p>用订单指纹识别重复出售、多平台冲突、多司机同时锁单等异常。</p></article>
+        <article class="feature-card"><span class="icon">民</span><h3>民用时段保障</h3><p>早晚高峰、夜间、恶劣天气启用刚需保障策略和最低派单率。</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="roleWorkbench">
+      <div class="section-title row-title">
+        <div>
+          <p class="eyebrow">角色工作台</p>
+          <h2>同一套订单事实，三种角色视角</h2>
+        </div>
+        <div class="segmented" role="tablist" aria-label="角色切换">
+          <button class="role-tab active" data-role="passenger">乘客</button>
+          <button class="role-tab" data-role="driver">司机</button>
+          <button class="role-tab" data-role="regulator">监管</button>
+        </div>
+      </div>
+      <div class="panel" id="rolePanel"></div>
+    </section>
+
+    <section class="section split" id="passenger">
+      <div>
+        <p class="eyebrow">乘客端</p>
+        <h2>用户打不到车时，要先知道订单去哪了</h2>
+        <p>乘客端不只显示“正在为你呼叫司机”，而是展示订单在系统中的真实状态：是否入池、是否被延迟、附近是否有司机、为什么暂未派单。</p>
+        <ul class="check-list">
+          <li>实时排队位置与预计等待</li>
+          <li>派单解释：距离不足、司机忙碌、民用保障优先等</li>
+          <li>异常提示：疑似压单、重复售卖、平台外流</li>
+        </ul>
+      </div>
+      <div class="panel passenger-panel">
+        <div class="panel-head"><strong>叫车透明状态</strong><span class="status-dot green">公开</span></div>
+        <div class="status-stack" id="passengerStatus"></div>
+      </div>
+    </section>
+
+    <section class="section split reverse" id="driver">
+      <div class="panel">
+        <div class="panel-head"><strong>司机公平接单视图</strong><span class="status-dot blue">在线</span></div>
+        <div class="driver-list" id="driverList"></div>
+      </div>
+      <div>
+        <p class="eyebrow">司机端</p>
+        <h2>司机接不到单时，要能证明自己可服务</h2>
+        <p>司机端记录在线、空闲、距离、服务半径和历史接单负载。如果有乘客订单存在但司机没收到单，系统自动生成“未派单异常”。</p>
+        <ul class="check-list">
+          <li>可接订单热区与服务半径</li>
+          <li>未派单异常自动留痕</li>
+          <li>派单得分透明：司机知道自己为什么被选或未被选</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="mapSimulation">
+      <div class="section-title row-title">
+        <div>
+          <p class="eyebrow">地图与实时位置模拟</p>
+          <h2>司机在附近却没收到单，要能被看见</h2>
+        </div>
+        <button class="primary" id="advanceMapBtn">推进 30 秒</button>
+      </div>
+      <div class="map-layout">
+        <div class="panel">
+          <div class="panel-head"><strong>城市网格地图</strong><span>乘=P · 终=G · 司=D · 热=H</span></div>
+          <div class="map-grid" id="cityMap"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><strong>位置与派单状态日志</strong><span id="mapTick">T+0 秒</span></div>
+          <div class="timeline" id="locationLog"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dashboard" id="dashboard">
+      <div class="section-title row-title">
+        <div>
+          <p class="eyebrow">监管看板</p>
+          <h2>关键指标一屏发现异常</h2>
+        </div>
+        <button class="secondary" id="refreshBtn">刷新模拟数据</button>
+      </div>
+      <div class="metric-grid" id="metricGrid"></div>
+      <div class="table-card">
+        <div class="panel-head"><strong>异常订单证据链</strong><span id="auditTime">刚刚更新</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>订单</th><th>问题</th><th>创建→入池</th><th>入池→派单</th><th>状态</th><th>证据</th></tr></thead>
+            <tbody id="orderTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="eventAudit">
+      <div class="section-title row-title">
+        <div>
+          <p class="eyebrow">后端订单流日志 Mock</p>
+          <h2>不是只看结果，而是看订单每一步发生了什么</h2>
+        </div>
+        <button class="secondary" id="verifyChainBtn">校验证据链</button>
+      </div>
+      <div class="event-grid">
+        <div class="panel">
+          <div class="panel-head"><strong>订单事件流</strong><span>模拟后端日志</span></div>
+          <div class="timeline" id="orderEvents"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><strong>不可篡改审计链演示</strong><button class="ghost tiny" id="tamperChainBtn">模拟篡改</button></div>
+          <p class="hint">原型用轻量 hash chain 演示思路，真实上线应接入可信时间戳、签名和监管存证。</p>
+          <div class="audit-chain" id="auditChain"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="fingerprintSection">
+      <div class="section-title">
+        <p class="eyebrow">跨平台订单指纹比对</p>
+        <h2>识别同一订单是否被重复售卖</h2>
+      </div>
+      <div class="panel" id="fingerprintMonitor"></div>
+    </section>
+
+    <section class="section" id="appealCenter">
+      <div class="section-title row-title">
+        <div>
+          <p class="eyebrow">异常申诉流程</p>
+          <h2>从发现异常到平台解释，形成闭环</h2>
+        </div>
+        <div class="nav-actions">
+          <button class="secondary" data-appeal="乘客压单申诉">乘客申诉</button>
+          <button class="secondary" data-appeal="司机未派单申诉">司机申诉</button>
+          <button class="secondary" data-appeal="一单两买申诉">重复售卖申诉</button>
+        </div>
+      </div>
+      <div class="appeal-grid" id="appealList"></div>
+    </section>
+
+    <section class="section simulation" id="simulation">
+      <div class="section-title row-title">
+        <div>
+          <p class="eyebrow">公平派单模拟</p>
+          <h2>每一单都给出“为什么派给 TA”</h2>
+        </div>
+        <button class="primary" id="dispatchBtn">模拟下一单派发</button>
+      </div>
+      <div class="sim-grid">
+        <div class="panel">
+          <div class="panel-head"><strong>待派订单池</strong><span>按等待时间排序</span></div>
+          <div id="orderPool" class="order-pool"></div>
+        </div>
+        <div class="panel result-panel">
+          <div class="panel-head"><strong>派单解释日志</strong><span class="status-dot purple">可审计</span></div>
+          <pre id="dispatchLog">点击“模拟下一单派发”，查看公平派单评分。</pre>
+        </div>
+      </div>
+      <div class="panel config-panel" id="algorithmConfig"></div>
+    </section>
+
+    <section class="section blueprint">
+      <div class="section-title">
+        <p class="eyebrow">ASCII 蓝图</p>
+        <h2>产品模块总览</h2>
+      </div>
+      <pre class="ascii">
++--------------------------------------------------------------------------------+
+|                              公平网约车治理 APP                                 |
++--------------------------------------------------------------------------------+
+|  乘客端透明叫车       司机端公平接单        监管端审计看板                       |
+|        |                    |                    |                              |
+|        v                    v                    v                              |
+|  地图位置模拟  --->  公平派单引擎  --->  算法配置后台                            |
+|        |                    |                    |                              |
+|        v                    v                    v                              |
+|  后端订单事件流 ----> 不可篡改证据链 ----> 压单/一单两买识别                      |
+|        |                                         |                              |
+|        +-------------> 异常申诉中心 <-------------+                              |
++--------------------------------------------------------------------------------+
+      </pre>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <strong>下一步可扩展：</strong>
+    <span>接入真实地图、司机定位、订单流日志、平台 API、监管侧权限与不可篡改审计存证。</span>
+  </footer>
+
+  <a class="sticky-bottom-bar" href="#simulation">查看公平派单解释</a>
+
+  <script src="./app.js"></script>
+</body>
+</html>
