@@ -1302,6 +1302,7 @@ function bindEvents() {
 // ──────────────────────────────────────────────
 
 function init() {
+  console.log("[Fair Dispatch OS] v20260611b — Car Constellation loaded");
   // Render all panels
   renderRolePanel();
   renderPassengerStatus();
