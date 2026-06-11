@@ -1,3 +1,12 @@
+/* ═══════════════════════════════════════════════════════
+   Fair Dispatch OS — Dala.md Dark Cosmic Style
+   Interactive app with particle constellation, toast, scroll animations
+   ═══════════════════════════════════════════════════════ */
+
+// ──────────────────────────────────────────────
+// Data Models
+// ──────────────────────────────────────────────
+
 let drivers = [
   { id: "D-018", name: "李师傅", distance: 1.1, idle: 18, fairnessDebt: 32, serviceScore: 96, radius: "2.5km", status: "空闲可接", x: 2, y: 1, online: true, canServe: true, heading: "东" },
   { id: "D-027", name: "王师傅", distance: 0.7, idle: 4, fairnessDebt: 10, serviceScore: 91, radius: "1.8km", status: "空闲可接", x: 4, y: 2, online: true, canServe: false, heading: "南" },
@@ -68,6 +77,10 @@ const roleContent = {
   }
 };
 
+// ──────────────────────────────────────────────
+// Utility Functions
+// ──────────────────────────────────────────────
+
 function $(selector) { return document.querySelector(selector); }
 function $all(selector) { return [...document.querySelectorAll(selector)]; }
 function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
@@ -84,6 +97,288 @@ function riskLevel(order) {
   if (order.poolDelay > 60 || order.dispatchDelay > 60) return { label: "中风险", className: "warn" };
   return { label: "正常", className: "blue" };
 }
+
+// ──────────────────────────────────────────────
+// Toast Notification System
+// ──────────────────────────────────────────────
+
+function showToast(title, message, duration = 3500) {
+  const container = $("#toastContainer");
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerHTML = `<div class="toast-title">${title}</div><div>${message}</div>`;
+  container.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add("show"));
+  });
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// ──────────────────────────────────────────────
+// Animated Number Counter
+// ──────────────────────────────────────────────
+
+function animateValue(element, start, end, duration = 800, suffix = "") {
+  const startTime = performance.now();
+  const isFloat = String(end).includes(".");
+
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const current = start + (end - start) * eased;
+    element.textContent = (isFloat ? current.toFixed(1) : Math.round(current)) + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(update);
+}
+
+// ──────────────────────────────────────────────
+// Particle Constellation Engine
+// ──────────────────────────────────────────────
+
+class ParticleConstellation {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
+    this.particles = [];
+    this.mouse = { x: -1000, y: -1000 };
+    this.running = true;
+    this.dpr = window.devicePixelRatio || 1;
+
+    const colors = ["#8052ff", "#8052ff", "#ffb829", "#15846e", "#ffffff", "#ffffff", "#ffffff"];
+    const shapes = ["triangle", "circle", "diamond", "square"];
+
+    this.resize();
+
+    // Create particles
+    const count = Math.min(Math.floor((this.width * this.height) / 3000), 400);
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: 1.5 + Math.random() * 3.5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        shape: shapes[Math.floor(Math.random() * shapes.length)],
+        alpha: 0.15 + Math.random() * 0.45,
+        baseAlpha: 0.15 + Math.random() * 0.45,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.005 + Math.random() * 0.015
+      });
+    }
+
+    // Mouse tracking
+    window.addEventListener("mousemove", (e) => {
+      this.mouse.x = e.clientX;
+      this.mouse.y = e.clientY;
+    });
+
+    window.addEventListener("resize", () => this.resize());
+
+    this.animate();
+  }
+
+  resize() {
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this.canvas.width = this.width * this.dpr;
+    this.canvas.height = this.height * this.dpr;
+    this.canvas.style.width = this.width + "px";
+    this.canvas.style.height = this.height + "px";
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+  }
+
+  drawShape(ctx, particle) {
+    const { x, y, size, shape } = particle;
+    ctx.beginPath();
+    switch (shape) {
+      case "triangle":
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x - size * 0.87, y + size * 0.5);
+        ctx.lineTo(x + size * 0.87, y + size * 0.5);
+        ctx.closePath();
+        break;
+      case "diamond":
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + size * 0.7, y);
+        ctx.lineTo(x, y + size);
+        ctx.lineTo(x - size * 0.7, y);
+        ctx.closePath();
+        break;
+      case "square":
+        ctx.rect(x - size * 0.6, y - size * 0.6, size * 1.2, size * 1.2);
+        break;
+      default: // circle
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        break;
+    }
+  }
+
+  animate() {
+    if (!this.running) return;
+
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
+
+    // Update and draw particles
+    for (const p of this.particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.pulse += p.pulseSpeed;
+      p.alpha = p.baseAlpha + Math.sin(p.pulse) * 0.1;
+
+      // Wrap around
+      if (p.x < -10) p.x = this.width + 10;
+      if (p.x > this.width + 10) p.x = -10;
+      if (p.y < -10) p.y = this.height + 10;
+      if (p.y > this.height + 10) p.y = -10;
+
+      // Mouse interaction — push away gently
+      const dx = p.x - this.mouse.x;
+      const dy = p.y - this.mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150) {
+        const force = (150 - dist) / 150 * 0.5;
+        p.vx += (dx / dist) * force * 0.1;
+        p.vy += (dy / dist) * force * 0.1;
+        p.alpha = Math.min(p.baseAlpha + 0.3, 1);
+      }
+
+      // Dampen velocity
+      p.vx *= 0.995;
+      p.vy *= 0.995;
+
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      this.drawShape(ctx, p);
+      ctx.fill();
+    }
+
+    // Draw connection lines between nearby particles
+    ctx.strokeStyle = "#8052ff";
+    ctx.lineWidth = 0.3;
+    for (let i = 0; i < this.particles.length; i++) {
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const a = this.particles[i];
+        const b = this.particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 80) {
+          ctx.globalAlpha = (1 - dist / 80) * 0.08;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(() => this.animate());
+  }
+}
+
+// ──────────────────────────────────────────────
+// Glow Cursor
+// ──────────────────────────────────────────────
+
+function initGlowCursor() {
+  const glow = $("#glowCursor");
+  if (!glow) return;
+
+  document.addEventListener("mousemove", (e) => {
+    glow.style.left = e.clientX + "px";
+    glow.style.top = e.clientY + "px";
+  });
+}
+
+// ──────────────────────────────────────────────
+// Scroll-triggered Animations
+// ──────────────────────────────────────────────
+
+function initScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+      }
+    });
+  }, {
+    threshold: 0.08,
+    rootMargin: "0px 0px -40px 0px"
+  });
+
+  $all(".animate-in").forEach((el) => observer.observe(el));
+}
+
+// ──────────────────────────────────────────────
+// Keyboard Shortcuts
+// ──────────────────────────────────────────────
+
+function initKeyboardShortcuts() {
+  document.addEventListener("keydown", (e) => {
+    // Only trigger if not typing in an input
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+    switch (e.key.toLowerCase()) {
+      case "d":
+        e.preventDefault();
+        runDispatchSimulation();
+        showToast("快捷键", "D — 模拟派单", 2000);
+        break;
+      case "a":
+        e.preventDefault();
+        runAudit();
+        showToast("快捷键", "A — 运行审计", 2000);
+        break;
+      case "m":
+        e.preventDefault();
+        advanceLocationTick();
+        showToast("快捷键", "M — 推进地图 30 秒", 2000);
+        break;
+      case "v":
+        e.preventDefault();
+        verifyAuditChain();
+        showToast("快捷键", "V — 校验证据链", 2000);
+        break;
+      case "1":
+        e.preventDefault();
+        state.activeRole = "passenger";
+        renderRolePanel();
+        showToast("角色切换", "乘客视角", 2000);
+        break;
+      case "2":
+        e.preventDefault();
+        state.activeRole = "driver";
+        renderRolePanel();
+        showToast("角色切换", "司机视角", 2000);
+        break;
+      case "3":
+        e.preventDefault();
+        state.activeRole = "regulator";
+        renderRolePanel();
+        showToast("角色切换", "监管视角", 2000);
+        break;
+      case "?":
+        showToast("快捷键", "D=派单 A=审计 M=地图 V=校验 1/2/3=角色", 4000);
+        break;
+    }
+  });
+}
+
+// ──────────────────────────────────────────────
+// Business Logic — Scoring & Dispatch
+// ──────────────────────────────────────────────
 
 function scoreDriver(driver, order) {
   const distanceScore = clamp(100 - driver.distance * 24, 0, 100);
@@ -122,6 +417,10 @@ function dispatchOrder(order) {
     .sort((a, b) => b.total - a.total);
 }
 
+// ──────────────────────────────────────────────
+// Render Functions
+// ──────────────────────────────────────────────
+
 function renderRolePanel() {
   const role = roleContent[state.activeRole];
   $("#rolePanel").innerHTML = `
@@ -151,7 +450,7 @@ function renderPassengerStatus() {
   ];
 
   $("#passengerStatus").innerHTML = rows.map(([title, desc, badge], index) => `
-    <article class="status-item">
+    <article class="status-item animate-in visible">
       <header><strong>${index + 1}. ${title}</strong><span class="badge ${badge === "偏慢" ? "warn" : badge === "待处理" ? "blue" : ""}">${badge}</span></header>
       <small>${desc}</small>
     </article>
@@ -183,6 +482,18 @@ function renderMetrics() {
   $("#metricGrid").innerHTML = metrics.map(([label, value, desc]) => `
     <article class="metric-card"><span>${label}</span><strong>${value}</strong><p>${desc}</p></article>
   `).join("");
+
+  // Animate metric numbers
+  const metricEls = $all(".metric-card strong");
+  metricEls.forEach((el) => {
+    el.style.opacity = "0";
+    el.style.transform = "translateY(10px)";
+    setTimeout(() => {
+      el.style.transition = "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)";
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
+    }, 100);
+  });
 }
 
 function renderOrderTable() {
@@ -229,7 +540,8 @@ function renderCityMap() {
       if (activeOrder.pickup.x === x && activeOrder.pickup.y === y) marks.push("P");
       if (activeOrder.dropoff.x === x && activeOrder.dropoff.y === y) marks.push("G");
       drivers.filter(driver => driver.x === x && driver.y === y).forEach(driver => marks.push(driver.canServe ? "D" : "d"));
-      cells.push(`<div class="map-cell ${marks.length ? "active" : ""}"><span>${marks.join("") || "·"}</span><small>${x},${y}</small></div>`);
+      const isActive = marks.length > 0;
+      cells.push(`<div class="map-cell ${isActive ? "active" : ""}" data-x="${x}" data-y="${y}"><span>${marks.join("") || "·"}</span><small>${x},${y}</small></div>`);
     }
   }
 
@@ -266,6 +578,7 @@ function advanceLocationTick() {
   renderLocationLog();
   renderDrivers();
   renderRolePanel();
+  showToast("地图更新", `T+${state.mapTick} 秒 — 司机位置已推进`, 2500);
 }
 
 function nextEventTime() {
@@ -317,6 +630,11 @@ function verifyAuditChain() {
     return !next || next.hash === item.prevHash;
   });
   renderAuditChain();
+  if (state.chainVerified) {
+    showToast("证据链校验", "全部校验通过 — 事件链完整无篡改", 3000);
+  } else if (state.chainTampered) {
+    showToast("证据链校验", "⚠ 发现篡改 — 链已断裂", 3500);
+  }
 }
 
 function renderAuditChain() {
@@ -397,6 +715,7 @@ function createAppeal(type) {
   appeals.unshift(appeal);
   appendEvent("Appeal Center", "APPEAL_CREATED", `${appeal.creator} 发起 ${appeal.type}`, appeal.orderId);
   renderAppeals();
+  showToast("申诉已创建", `${appeal.type} — ${appeal.id}`, 3000);
 }
 
 function advanceAppeal(id) {
@@ -404,6 +723,7 @@ function advanceAppeal(id) {
   const appeal = appeals.find(item => item.id === id);
   appendEvent("Appeal Center", "APPEAL_STATUS_UPDATED", `${appeal.id} 进入 ${appealStatuses[appeal.statusIndex]}`, appeal.orderId);
   renderAppeals();
+  showToast("申诉推进", `${appeal.id} → ${appealStatuses[appeal.statusIndex]}`, 2500);
 }
 
 function runDispatchSimulation() {
@@ -436,8 +756,24 @@ function runDispatchSimulation() {
     `审计结论：该单生成可解释日志，可供乘客、司机与监管侧复核。`
   ];
 
-  $("#dispatchLog").textContent = lines.join("\n");
+  const logEl = $("#dispatchLog");
+  logEl.textContent = lines.join("\n");
+
+  // Typing animation effect
+  logEl.style.opacity = "0";
+  logEl.style.transform = "translateY(8px)";
+  setTimeout(() => {
+    logEl.style.transition = "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+    logEl.style.opacity = "1";
+    logEl.style.transform = "translateY(0)";
+  }, 50);
+
   appendEvent("Dispatch Engine", "DRIVER_NOTIFIED", winner ? `通知 ${winner.driver.name} 接单，得分 ${winner.total}` : "无可服务司机，等待下一轮", order.id);
+
+  if (winner) {
+    showToast("派单完成", `${winner.driver.name} — 综合得分 ${winner.total}`, 3000);
+  }
+
   renderCityMap();
   renderLocationLog();
 }
@@ -452,7 +788,7 @@ function renderAlgorithmConfig() {
   ];
   const total = config.reduce((sum, [, , value]) => sum + value, 0);
   $("#algorithmConfig").innerHTML = `
-    <div class="panel-head"><strong>派单算法配置后台 Mock</strong><span class="badge ${Math.abs(total - 1) < 0.01 ? "" : "warn"}">权重合计 ${(total * 100).toFixed(0)}%</span></div>
+    <div class="panel-head"><strong>派单算法配置后台</strong><span class="badge ${Math.abs(total - 1) < 0.01 ? "" : "warn"}">权重合计 ${(total * 100).toFixed(0)}%</span></div>
     <div class="config-grid">
       ${config.map(([key, label, value]) => `
         <label class="range-row">
@@ -467,7 +803,7 @@ function renderAlgorithmConfig() {
         <b>+${weights.civicBonus}</b>
       </label>
     </div>
-    <p class="hint">调整后点击“模拟下一单派发”，可看到候选司机得分变化。真实产品中这里应接权限审批、灰度发布和审计记录。</p>
+    <p class="hint">调整后点击"模拟下一单派发"，可看到候选司机得分变化。快捷键 D 派单、A 审计、M 推进地图。</p>
   `;
 }
 
@@ -481,7 +817,67 @@ function runAudit() {
   renderOrderTable();
   renderFingerprintMonitor();
   runDispatchSimulation();
+  showToast("审计完成", `第 ${state.auditRuns} 次 — 指标已刷新`, 3000);
 }
+
+// ──────────────────────────────────────────────
+// Interactive Map — Click to inspect cell
+// ──────────────────────────────────────────────
+
+function initMapInteraction() {
+  document.addEventListener("click", (e) => {
+    const cell = e.target.closest(".map-cell");
+    if (!cell) return;
+
+    const x = parseInt(cell.dataset.x);
+    const y = parseInt(cell.dataset.y);
+
+    // Find entities at this position
+    const driverHere = drivers.filter(d => d.x === x && d.y === y);
+    const orderPickup = orders.filter(o => o.pickup.x === x && o.pickup.y === y);
+    const orderDropoff = orders.filter(o => o.dropoff.x === x && o.dropoff.y === y);
+
+    let info = `网格 (${x}, ${y})`;
+    if (driverHere.length) info += ` — ${driverHere.map(d => d.name).join("、")}`;
+    if (orderPickup.length) info += ` — 上车点: ${orderPickup.map(o => o.passenger.split("→")[0]).join("、")}`;
+    if (orderDropoff.length) info += ` — 下车点: ${orderDropoff.map(o => o.passenger.split("→")[1]).join("、")}`;
+
+    // Highlight cell briefly
+    cell.style.background = "rgba(128, 82, 255, 0.25)";
+    cell.style.borderColor = "rgba(128, 82, 255, 0.5)";
+    setTimeout(() => {
+      cell.style.background = "";
+      cell.style.borderColor = "";
+    }, 600);
+
+    showToast("地图探查", info, 3000);
+  });
+}
+
+// ──────────────────────────────────────────────
+// Auto-ticking location (subtle background motion)
+// ──────────────────────────────────────────────
+
+function initAutoTick() {
+  // Gently advance driver positions every 8 seconds for a living feel
+  setInterval(() => {
+    drivers = drivers.map((driver, index) => ({
+      ...driver,
+      x: clamp(driver.x + (Math.random() > 0.7 ? (index % 2 === 0 ? 1 : -1) : 0), 1, 8),
+      y: clamp(driver.y + (Math.random() > 0.8 ? (index % 3 === 0 ? 1 : -1) : 0), 1, 6),
+      idle: driver.idle + 0.1
+    }));
+    // Only re-render map if the section is visible
+    const mapSection = $("#mapSimulation");
+    if (mapSection && mapSection.getBoundingClientRect().top < window.innerHeight) {
+      renderCityMap();
+    }
+  }, 8000);
+}
+
+// ──────────────────────────────────────────────
+// Event Binding
+// ──────────────────────────────────────────────
 
 function bindEvents() {
   $all("[data-scroll]").forEach(button => {
@@ -493,7 +889,12 @@ function bindEvents() {
   $("#runAuditBtn").addEventListener("click", runAudit);
   $("#advanceMapBtn").addEventListener("click", advanceLocationTick);
   $("#verifyChainBtn").addEventListener("click", verifyAuditChain);
-  $("#tamperChainBtn").addEventListener("click", () => { state.chainTampered = !state.chainTampered; state.chainVerified = false; renderAuditChain(); });
+  $("#tamperChainBtn").addEventListener("click", () => {
+    state.chainTampered = !state.chainTampered;
+    state.chainVerified = false;
+    renderAuditChain();
+    showToast("证据链", state.chainTampered ? "已模拟篡改 — 链断裂" : "篡改已撤销", 2500);
+  });
   $all("[data-appeal]").forEach(button => button.addEventListener("click", () => createAppeal(button.dataset.appeal)));
   document.addEventListener("click", event => {
     const button = event.target.closest("[data-advance-appeal]");
@@ -512,7 +913,12 @@ function bindEvents() {
   });
 }
 
+// ──────────────────────────────────────────────
+// Initialization
+// ──────────────────────────────────────────────
+
 function init() {
+  // Render all panels
   renderRolePanel();
   renderPassengerStatus();
   renderDrivers();
@@ -526,7 +932,27 @@ function init() {
   renderFingerprintMonitor();
   renderAppeals();
   renderAlgorithmConfig();
+
+  // Bind events
   bindEvents();
+
+  // Initialize interactive features
+  initScrollAnimations();
+  initGlowCursor();
+  initMapInteraction();
+  initAutoTick();
+  initKeyboardShortcuts();
+
+  // Start particle constellation
+  const canvas = $("#particleCanvas");
+  if (canvas) {
+    new ParticleConstellation(canvas);
+  }
+
+  // Welcome toast
+  setTimeout(() => {
+    showToast("Fair Dispatch OS", "按 ? 查看快捷键 · 点击地图网格探查", 4000);
+  }, 1500);
 }
 
 init();

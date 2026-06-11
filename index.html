@@ -3,16 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>公平网约车治理 APP 原型</title>
+  <title>公平网约车治理 — Fair Dispatch OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+
+  <!-- Particle constellation canvas -->
+  <canvas id="particleCanvas" aria-hidden="true"></canvas>
+
+  <!-- Glow cursor follower -->
+  <div class="glow-cursor" id="glowCursor" aria-hidden="true"></div>
+
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
   <header class="hero">
     <nav class="topbar" aria-label="主导航">
       <div class="brand">
         <span class="brand-mark">衡</span>
         <div>
-          <strong>公平网约车治理 APP</strong>
+          <strong>Fair Dispatch OS</strong>
           <small>透明叫车 · 公平派单 · 防压单 · 防一单两卖</small>
         </div>
       </div>
@@ -28,8 +41,8 @@
     <section class="hero-grid">
       <div class="hero-copy">
         <p class="eyebrow">Ride-hailing Fair Dispatch OS</p>
-        <h1>让乘客知道为什么等，让司机知道为什么没单。</h1>
-        <p class="lead">围绕“用户打不到车、司机接不到单、压单、派单不公平、民用时段订单外流、一单两买”六类问题，建立可解释派单、订单证据链和监管审计看板。</p>
+        <h1>让乘客知道为什么等，<br>让司机知道为什么没单。</h1>
+        <p class="lead">围绕"用户打不到车、司机接不到单、压单、派单不公平、民用时段订单外流、一单两买"六类问题，建立可解释派单、订单证据链和监管审计看板。</p>
         <div class="hero-actions">
           <button class="primary large" data-scroll="passenger">查看乘客端</button>
           <button class="secondary large" data-scroll="driver">查看司机端</button>
@@ -67,22 +80,22 @@
   </header>
 
   <main>
-    <section class="section" id="features">
+    <section class="section animate-in" id="features">
       <div class="section-title">
         <p class="eyebrow">核心功能</p>
         <h2>把黑箱派单改造成可审计系统</h2>
       </div>
-      <div class="feature-grid">
-        <article class="feature-card"><span class="icon">乘</span><h3>乘客透明叫车</h3><p>展示排队位置、附近司机、预计等待、压单风险和未派单原因。</p></article>
-        <article class="feature-card"><span class="icon">司</span><h3>司机接单公平</h3><p>记录司机可服务但未收到单的时刻，识别司机空转和派单偏置。</p></article>
-        <article class="feature-card"><span class="icon">衡</span><h3>公平派单引擎</h3><p>综合距离、等待、司机空闲、服务均衡和民生时段权重进行派单。</p></article>
-        <article class="feature-card"><span class="icon">链</span><h3>订单证据链</h3><p>记录订单创建、入池、首次派单、司机响应和平台流转全过程。</p></article>
-        <article class="feature-card"><span class="icon">防</span><h3>防一单两买</h3><p>用订单指纹识别重复出售、多平台冲突、多司机同时锁单等异常。</p></article>
-        <article class="feature-card"><span class="icon">民</span><h3>民用时段保障</h3><p>早晚高峰、夜间、恶劣天气启用刚需保障策略和最低派单率。</p></article>
+      <div class="feature-grid stagger-children">
+        <article class="feature-card animate-in"><span class="icon">乘</span><h3>乘客透明叫车</h3><p>展示排队位置、附近司机、预计等待、压单风险和未派单原因。</p></article>
+        <article class="feature-card animate-in"><span class="icon">司</span><h3>司机接单公平</h3><p>记录司机可服务但未收到单的时刻，识别司机空转和派单偏置。</p></article>
+        <article class="feature-card animate-in"><span class="icon">衡</span><h3>公平派单引擎</h3><p>综合距离、等待、司机空闲、服务均衡和民生时段权重进行派单。</p></article>
+        <article class="feature-card animate-in"><span class="icon">链</span><h3>订单证据链</h3><p>记录订单创建、入池、首次派单、司机响应和平台流转全过程。</p></article>
+        <article class="feature-card animate-in"><span class="icon">防</span><h3>防一单两买</h3><p>用订单指纹识别重复出售、多平台冲突、多司机同时锁单等异常。</p></article>
+        <article class="feature-card animate-in"><span class="icon">民</span><h3>民用时段保障</h3><p>早晚高峰、夜间、恶劣天气启用刚需保障策略和最低派单率。</p></article>
       </div>
     </section>
 
-    <section class="section" id="roleWorkbench">
+    <section class="section animate-in" id="roleWorkbench">
       <div class="section-title row-title">
         <div>
           <p class="eyebrow">角色工作台</p>
@@ -97,11 +110,11 @@
       <div class="panel" id="rolePanel"></div>
     </section>
 
-    <section class="section split" id="passenger">
+    <section class="section split animate-in" id="passenger">
       <div>
         <p class="eyebrow">乘客端</p>
         <h2>用户打不到车时，要先知道订单去哪了</h2>
-        <p>乘客端不只显示“正在为你呼叫司机”，而是展示订单在系统中的真实状态：是否入池、是否被延迟、附近是否有司机、为什么暂未派单。</p>
+        <p>乘客端不只显示"正在为你呼叫司机"，而是展示订单在系统中的真实状态：是否入池、是否被延迟、附近是否有司机、为什么暂未派单。</p>
         <ul class="check-list">
           <li>实时排队位置与预计等待</li>
           <li>派单解释：距离不足、司机忙碌、民用保障优先等</li>
@@ -114,7 +127,7 @@
       </div>
     </section>
 
-    <section class="section split reverse" id="driver">
+    <section class="section split reverse animate-in" id="driver">
       <div class="panel">
         <div class="panel-head"><strong>司机公平接单视图</strong><span class="status-dot blue">在线</span></div>
         <div class="driver-list" id="driverList"></div>
@@ -122,7 +135,7 @@
       <div>
         <p class="eyebrow">司机端</p>
         <h2>司机接不到单时，要能证明自己可服务</h2>
-        <p>司机端记录在线、空闲、距离、服务半径和历史接单负载。如果有乘客订单存在但司机没收到单，系统自动生成“未派单异常”。</p>
+        <p>司机端记录在线、空闲、距离、服务半径和历史接单负载。如果有乘客订单存在但司机没收到单，系统自动生成"未派单异常"。</p>
         <ul class="check-list">
           <li>可接订单热区与服务半径</li>
           <li>未派单异常自动留痕</li>
@@ -131,7 +144,7 @@
       </div>
     </section>
 
-    <section class="section" id="mapSimulation">
+    <section class="section animate-in" id="mapSimulation">
       <div class="section-title row-title">
         <div>
           <p class="eyebrow">地图与实时位置模拟</p>
@@ -151,7 +164,7 @@
       </div>
     </section>
 
-    <section class="section dashboard" id="dashboard">
+    <section class="section dashboard animate-in" id="dashboard">
       <div class="section-title row-title">
         <div>
           <p class="eyebrow">监管看板</p>
@@ -171,7 +184,7 @@
       </div>
     </section>
 
-    <section class="section" id="eventAudit">
+    <section class="section animate-in" id="eventAudit">
       <div class="section-title row-title">
         <div>
           <p class="eyebrow">后端订单流日志 Mock</p>
@@ -192,7 +205,7 @@
       </div>
     </section>
 
-    <section class="section" id="fingerprintSection">
+    <section class="section animate-in" id="fingerprintSection">
       <div class="section-title">
         <p class="eyebrow">跨平台订单指纹比对</p>
         <h2>识别同一订单是否被重复售卖</h2>
@@ -200,7 +213,7 @@
       <div class="panel" id="fingerprintMonitor"></div>
     </section>
 
-    <section class="section" id="appealCenter">
+    <section class="section animate-in" id="appealCenter">
       <div class="section-title row-title">
         <div>
           <p class="eyebrow">异常申诉流程</p>
@@ -215,11 +228,11 @@
       <div class="appeal-grid" id="appealList"></div>
     </section>
 
-    <section class="section simulation" id="simulation">
+    <section class="section simulation animate-in" id="simulation">
       <div class="section-title row-title">
         <div>
           <p class="eyebrow">公平派单模拟</p>
-          <h2>每一单都给出“为什么派给 TA”</h2>
+          <h2>每一单都给出"为什么派给 TA"</h2>
         </div>
         <button class="primary" id="dispatchBtn">模拟下一单派发</button>
       </div>
@@ -230,15 +243,15 @@
         </div>
         <div class="panel result-panel">
           <div class="panel-head"><strong>派单解释日志</strong><span class="status-dot purple">可审计</span></div>
-          <pre id="dispatchLog">点击“模拟下一单派发”，查看公平派单评分。</pre>
+          <pre id="dispatchLog">点击"模拟下一单派发"，查看公平派单评分。</pre>
         </div>
       </div>
       <div class="panel config-panel" id="algorithmConfig"></div>
     </section>
 
-    <section class="section blueprint">
+    <section class="section blueprint animate-in">
       <div class="section-title">
-        <p class="eyebrow">ASCII 蓝图</p>
+        <p class="eyebrow">系统蓝图</p>
         <h2>产品模块总览</h2>
       </div>
       <pre class="ascii">
