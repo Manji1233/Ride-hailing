@@ -141,8 +141,221 @@ function animateValue(element, start, end, duration = 800, suffix = "") {
 }
 
 // ──────────────────────────────────────────────
-// Particle Constellation Engine
+// Car Shape Target Points Generator
 // ──────────────────────────────────────────────
+
+function generateCarTargets(cx, cy, scale) {
+  // Side-view taxi silhouette — normalized coordinates, then scaled & centered
+  // The car faces RIGHT. Origin = center of car body.
+  // Outline is traced as a series of points along the car perimeter.
+
+  const raw = [
+    // === Lower body / chassis — flat bottom ===
+    [-1.00,  0.10],  // rear bumper bottom
+    [-0.92,  0.10],  // rear under
+    [-0.80,  0.10],
+    [-0.70,  0.10],  // rear wheel area
+    [-0.60,  0.10],
+    [-0.50,  0.10],
+    [-0.40,  0.10],  // between wheels
+    [-0.30,  0.10],
+    [-0.20,  0.10],
+    [-0.10,  0.10],  // front wheel area
+    [ 0.00,  0.10],
+    [ 0.10,  0.10],
+    [ 0.20,  0.10],
+    [ 0.30,  0.10],
+    [ 0.40,  0.10],  // front under
+    [ 0.50,  0.10],
+    [ 0.58,  0.08],  // front bumper curve
+    [ 0.65,  0.04],
+    [ 0.70,  0.00],  // front tip bottom
+
+    // === Front nose — rises up ===
+    [ 0.72, -0.04],
+    [ 0.72, -0.10],  // front fascia
+    [ 0.70, -0.16],
+    [ 0.68, -0.20],  // hood start
+    [ 0.65, -0.24],
+
+    // === Hood ===
+    [ 0.58, -0.28],
+    [ 0.50, -0.30],
+    [ 0.40, -0.31],  // hood flat
+    [ 0.30, -0.32],
+    [ 0.20, -0.33],
+
+    // === Windshield ===
+    [ 0.15, -0.34],
+    [ 0.10, -0.38],
+    [ 0.05, -0.46],  // windshield slope
+    [ 0.00, -0.54],
+    [-0.05, -0.60],  // windshield top edge
+
+    // === Roof ===
+    [-0.08, -0.64],
+    [-0.14, -0.67],  // roof start
+    [-0.22, -0.69],
+    [-0.30, -0.70],  // roof peak
+    [-0.38, -0.70],
+    [-0.46, -0.69],
+    [-0.52, -0.68],  // roof trailing
+
+    // === Rear window ===
+    [-0.56, -0.66],
+    [-0.60, -0.62],
+    [-0.64, -0.56],  // rear window slope
+    [-0.67, -0.50],
+    [-0.70, -0.44],
+    [-0.72, -0.38],  // C-pillar
+
+    // === Trunk / rear ===
+    [-0.74, -0.32],
+    [-0.76, -0.26],
+    [-0.78, -0.20],  // trunk
+    [-0.80, -0.16],
+    [-0.82, -0.12],
+    [-0.84, -0.08],  // rear fascia
+    [-0.86, -0.04],
+    [-0.90,  0.00],
+    [-0.94,  0.04],
+    [-0.98,  0.08],  // rear bumper
+    [-1.00,  0.10],  // back to start
+
+    // === Rear wheel ===
+    [-0.70,  0.06],
+    [-0.72,  0.02],
+    [-0.73, -0.02],
+    [-0.72, -0.06],
+    [-0.70, -0.08],
+    [-0.67, -0.09],
+    [-0.64, -0.08],
+    [-0.62, -0.06],
+    [-0.61, -0.02],
+    [-0.62,  0.02],
+    [-0.64,  0.05],
+    [-0.67,  0.07],
+    [-0.70,  0.06],
+
+    // === Front wheel ===
+    [-0.04,  0.06],
+    [-0.06,  0.02],
+    [-0.07, -0.02],
+    [-0.06, -0.06],
+    [-0.04, -0.08],
+    [-0.01, -0.09],
+    [ 0.02, -0.08],
+    [ 0.04, -0.06],
+    [ 0.05, -0.02],
+    [ 0.04,  0.02],
+    [ 0.02,  0.05],
+    [-0.01,  0.07],
+    [-0.04,  0.06],
+
+    // === Taxi sign on roof ===
+    [-0.30, -0.76],
+    [-0.32, -0.78],
+    [-0.34, -0.79],
+    [-0.36, -0.79],  // sign top
+    [-0.38, -0.79],
+    [-0.40, -0.78],
+    [-0.42, -0.76],
+    // sign posts
+    [-0.30, -0.70],
+    [-0.42, -0.70],
+
+    // === Headlight ===
+    [ 0.68, -0.18],
+    [ 0.70, -0.16],
+    [ 0.71, -0.14],
+    [ 0.70, -0.12],
+    [ 0.68, -0.12],
+    [ 0.66, -0.14],
+    [ 0.66, -0.16],
+
+    // === Taillight ===
+    [-0.84, -0.10],
+    [-0.86, -0.08],
+    [-0.87, -0.06],
+    [-0.86, -0.04],
+    [-0.84, -0.04],
+    [-0.82, -0.06],
+    [-0.82, -0.08],
+
+    // === Door line (passenger) ===
+    [ 0.08, -0.32],
+    [ 0.06, -0.28],
+    [ 0.04, -0.20],
+    [ 0.04, -0.10],
+    [ 0.06,  0.00],
+    [ 0.08,  0.06],
+
+    // === Extra fill particles for body density ===
+    // Interior body fill (scattered inside the outline)
+    [ 0.30, -0.10],
+    [ 0.20, -0.15],
+    [ 0.10, -0.20],
+    [ 0.00, -0.15],
+    [-0.10, -0.10],
+    [-0.20, -0.15],
+    [-0.30, -0.20],
+    [-0.40, -0.25],
+    [-0.50, -0.30],
+    [-0.55, -0.35],
+    [-0.50, -0.40],
+    [-0.40, -0.45],
+    [-0.30, -0.50],
+    [-0.20, -0.55],
+    [-0.10, -0.55],
+    [ 0.00, -0.45],
+    [ 0.10, -0.35],
+    [ 0.20, -0.25],
+    [ 0.35, -0.15],
+    [ 0.45, -0.10],
+    [ 0.50, -0.05],
+    [-0.60, -0.20],
+    [-0.65, -0.30],
+    [-0.60, -0.38],
+    [-0.55, -0.45],
+    [-0.45, -0.50],
+    [-0.35, -0.55],
+    [-0.25, -0.60],
+    [-0.15, -0.62],
+    [-0.05, -0.58],
+    [ 0.05, -0.48],
+    [ 0.15, -0.38],
+    [ 0.25, -0.28],
+    [ 0.40, -0.18],
+    [ 0.55, -0.08],
+    [ 0.60, -0.02],
+    [-0.75, -0.15],
+    [-0.78, -0.10],
+    [-0.30, -0.35],
+    [-0.10, -0.30],
+    [ 0.05, -0.25],
+    [ 0.15, -0.10],
+    [-0.40, -0.10],
+    [-0.50, -0.15],
+    [-0.20, -0.40],
+    [-0.15, -0.45],
+    [ 0.02, -0.38],
+    [ 0.12, -0.28],
+    [ 0.25, -0.08],
+    [ 0.38, -0.05],
+    [-0.65, -0.10],
+    [-0.55, -0.08],
+    [-0.45, -0.05],
+    [-0.35, -0.05],
+    [-0.25, -0.05],
+    [-0.15, -0.05],
+    [-0.05, -0.05],
+  ];
+
+  return raw.map(([rx, ry]) => ({
+    x: cx + rx * scale,
+    y: cy + ry * scale
+  }));
+}
 
 class ParticleConstellation {
   constructor(canvas) {
@@ -152,27 +365,89 @@ class ParticleConstellation {
     this.mouse = { x: -1000, y: -1000 };
     this.running = true;
     this.dpr = window.devicePixelRatio || 1;
+    this.time = 0;
 
-    const colors = ["#8052ff", "#8052ff", "#ffb829", "#15846e", "#ffffff", "#ffffff", "#ffffff"];
+    const carColors = ["#8052ff", "#8052ff", "#8052ff", "#ffb829", "#15846e", "#ffffff", "#ffffff", "#ffffff"];
+    const driftColors = ["#8052ff", "#ffb829", "#15846e", "#ffffff", "#ffffff"];
     const shapes = ["triangle", "circle", "diamond", "square"];
 
     this.resize();
 
-    // Create particles
-    const count = Math.min(Math.floor((this.width * this.height) / 3000), 400);
-    for (let i = 0; i < count; i++) {
+    // Generate car target points — centered in right half of hero
+    const carCX = this.width * 0.72;
+    const carCY = this.height * 0.42;
+    const carScale = Math.min(this.width, this.height) * 0.32;
+    this.carTargets = generateCarTargets(carCX, carCY, carScale);
+    this.carCenterX = carCX;
+    this.carCenterY = carCY;
+
+    // === Car-shape particles (cluster into the taxi) ===
+    for (let i = 0; i < this.carTargets.length; i++) {
+      const t = this.carTargets[i];
+      const isWheel = (i >= 35 && i <= 47) || (i >= 48 && i <= 60);
+      const isSign = (i >= 61 && i <= 69);
+      const isLight = (i >= 70 && i <= 82);
+      const isDoor = (i >= 83 && i <= 88);
+      const isFill = i >= 89;
+
+      // Color assignment based on car region
+      let color;
+      if (isSign) {
+        color = "#ffb829";  // Amber for taxi sign
+      } else if (isLight && i < 77) {
+        color = "#ffb829";  // Headlight = amber
+      } else if (isLight) {
+        color = "#ff6b6b"; // Taillight = red-ish
+      } else if (isWheel) {
+        color = "#ffffff";  // Wheels = bright white
+      } else if (isDoor) {
+        color = "#8052ff";  // Door line = plum
+      } else if (isFill) {
+        color = carColors[Math.floor(Math.random() * carColors.length)];
+      } else {
+        color = carColors[Math.floor(Math.random() * carColors.length)];
+      }
+
+      this.particles.push({
+        x: t.x + (Math.random() - 0.5) * 300,  // start scattered
+        y: t.y + (Math.random() - 0.5) * 300,
+        tx: t.x,   // target x
+        ty: t.y,   // target y
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        size: isSign ? 2.5 + Math.random() * 2 : isLight ? 2 + Math.random() * 1.5 : 1.5 + Math.random() * 3,
+        color,
+        shape: isSign ? "diamond" : isWheel ? "circle" : shapes[Math.floor(Math.random() * shapes.length)],
+        alpha: isSign ? 0.7 + Math.random() * 0.3 : 0.3 + Math.random() * 0.5,
+        baseAlpha: isSign ? 0.7 : 0.3 + Math.random() * 0.4,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: isSign ? 0.03 + Math.random() * 0.02 : 0.005 + Math.random() * 0.015,
+        isCar: true,
+        spring: 0.015 + Math.random() * 0.01,  // attraction to target
+        damping: 0.92 + Math.random() * 0.04
+      });
+    }
+
+    // === Drift particles (ambient, no target) ===
+    const driftCount = Math.min(Math.floor((this.width * this.height) / 8000), 120);
+    for (let i = 0; i < driftCount; i++) {
       this.particles.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: 1.5 + Math.random() * 3.5,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        tx: null,
+        ty: null,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        size: 1 + Math.random() * 2,
+        color: driftColors[Math.floor(Math.random() * driftColors.length)],
         shape: shapes[Math.floor(Math.random() * shapes.length)],
-        alpha: 0.15 + Math.random() * 0.45,
-        baseAlpha: 0.15 + Math.random() * 0.45,
+        alpha: 0.08 + Math.random() * 0.2,
+        baseAlpha: 0.08 + Math.random() * 0.2,
         pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.005 + Math.random() * 0.015
+        pulseSpeed: 0.003 + Math.random() * 0.008,
+        isCar: false,
+        spring: 0,
+        damping: 0.995
       });
     }
 
@@ -182,9 +457,30 @@ class ParticleConstellation {
       this.mouse.y = e.clientY;
     });
 
-    window.addEventListener("resize", () => this.resize());
+    window.addEventListener("resize", () => {
+      this.resize();
+      this.recalcTargets();
+    });
 
     this.animate();
+  }
+
+  recalcTargets() {
+    const carCX = this.width * 0.72;
+    const carCY = this.height * 0.42;
+    const carScale = Math.min(this.width, this.height) * 0.32;
+    this.carTargets = generateCarTargets(carCX, carCY, carScale);
+    this.carCenterX = carCX;
+    this.carCenterY = carCY;
+
+    let targetIdx = 0;
+    for (const p of this.particles) {
+      if (p.isCar && targetIdx < this.carTargets.length) {
+        p.tx = this.carTargets[targetIdx].x;
+        p.ty = this.carTargets[targetIdx].y;
+        targetIdx++;
+      }
+    }
   }
 
   resize() {
@@ -225,37 +521,56 @@ class ParticleConstellation {
 
   animate() {
     if (!this.running) return;
+    this.time++;
 
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
+    // Gentle car-wide breathing — oscillate the entire formation
+    const breathX = Math.sin(this.time * 0.008) * 1.5;
+    const breathY = Math.cos(this.time * 0.006) * 0.8;
+
     // Update and draw particles
     for (const p of this.particles) {
-      p.x += p.vx;
-      p.y += p.vy;
       p.pulse += p.pulseSpeed;
       p.alpha = p.baseAlpha + Math.sin(p.pulse) * 0.1;
 
-      // Wrap around
-      if (p.x < -10) p.x = this.width + 10;
-      if (p.x > this.width + 10) p.x = -10;
-      if (p.y < -10) p.y = this.height + 10;
-      if (p.y > this.height + 10) p.y = -10;
+      // Spring force toward target for car particles
+      if (p.isCar && p.tx !== null) {
+        const tx = p.tx + breathX;
+        const ty = p.ty + breathY;
+        const dx = tx - p.x;
+        const dy = ty - p.y;
+        p.vx += dx * p.spring;
+        p.vy += dy * p.spring;
+      }
 
-      // Mouse interaction — push away gently
-      const dx = p.x - this.mouse.x;
-      const dy = p.y - this.mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 150) {
-        const force = (150 - dist) / 150 * 0.5;
-        p.vx += (dx / dist) * force * 0.1;
-        p.vy += (dy / dist) * force * 0.1;
+      // Mouse interaction — push away
+      const mdx = p.x - this.mouse.x;
+      const mdy = p.y - this.mouse.y;
+      const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mdist < 120) {
+        const force = (120 - mdist) / 120 * 1.2;
+        p.vx += (mdx / (mdist + 0.1)) * force * 0.3;
+        p.vy += (mdy / (mdist + 0.1)) * force * 0.3;
         p.alpha = Math.min(p.baseAlpha + 0.3, 1);
       }
 
-      // Dampen velocity
-      p.vx *= 0.995;
-      p.vy *= 0.995;
+      // Apply velocity
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Damping
+      p.vx *= p.damping;
+      p.vy *= p.damping;
+
+      // Wrap drift particles
+      if (!p.isCar) {
+        if (p.x < -10) p.x = this.width + 10;
+        if (p.x > this.width + 10) p.x = -10;
+        if (p.y < -10) p.y = this.height + 10;
+        if (p.y > this.height + 10) p.y = -10;
+      }
 
       ctx.globalAlpha = p.alpha;
       ctx.fillStyle = p.color;
@@ -263,24 +578,93 @@ class ParticleConstellation {
       ctx.fill();
     }
 
-    // Draw connection lines between nearby particles
+    // Draw connection lines — more generous for car particles
     ctx.strokeStyle = "#8052ff";
-    ctx.lineWidth = 0.3;
-    for (let i = 0; i < this.particles.length; i++) {
-      for (let j = i + 1; j < this.particles.length; j++) {
-        const a = this.particles[i];
-        const b = this.particles[j];
+    ctx.lineWidth = 0.4;
+    const carParticles = this.particles.filter(p => p.isCar);
+    for (let i = 0; i < carParticles.length; i++) {
+      for (let j = i + 1; j < carParticles.length; j++) {
+        const a = carParticles[i];
+        const b = carParticles[j];
         const dx = a.x - b.x;
         const dy = a.y - b.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 80) {
-          ctx.globalAlpha = (1 - dist / 80) * 0.08;
+        if (dist < 55) {
+          ctx.globalAlpha = (1 - dist / 55) * 0.12;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
           ctx.stroke();
         }
       }
+    }
+
+    // Sparse connections for drift particles
+    const driftParticles = this.particles.filter(p => !p.isCar);
+    for (let i = 0; i < driftParticles.length; i++) {
+      for (let j = i + 1; j < driftParticles.length; j++) {
+        const a = driftParticles[i];
+        const b = driftParticles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 100) {
+          ctx.globalAlpha = (1 - dist / 100) * 0.05;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Glow effect for taxi sign
+    const signParticles = carParticles.filter((_, i) => {
+      const origIdx = this.particles.indexOf(carParticles[i]);
+      return origIdx >= 61 && origIdx <= 69;
+    });
+    for (const sp of signParticles) {
+      const glowRadius = 12 + Math.sin(sp.pulse) * 4;
+      const gradient = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, glowRadius);
+      gradient.addColorStop(0, "rgba(255, 184, 41, 0.15)");
+      gradient.addColorStop(1, "rgba(255, 184, 41, 0)");
+      ctx.globalAlpha = 0.6 + Math.sin(sp.pulse) * 0.3;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, glowRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Headlight glow
+    const headlightParticles = carParticles.filter((_, i) => {
+      const origIdx = this.particles.indexOf(carParticles[i]);
+      return origIdx >= 70 && origIdx <= 76;
+    });
+    for (const hp of headlightParticles) {
+      const gradient = ctx.createRadialGradient(hp.x, hp.y, 0, hp.x, hp.y, 10);
+      gradient.addColorStop(0, "rgba(255, 184, 41, 0.12)");
+      gradient.addColorStop(1, "rgba(255, 184, 41, 0)");
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(hp.x, hp.y, 10, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Taillight glow (red)
+    const taillightParticles = carParticles.filter((_, i) => {
+      const origIdx = this.particles.indexOf(carParticles[i]);
+      return origIdx >= 77 && origIdx <= 82;
+    });
+    for (const tp of taillightParticles) {
+      const gradient = ctx.createRadialGradient(tp.x, tp.y, 0, tp.x, tp.y, 8);
+      gradient.addColorStop(0, "rgba(255, 107, 107, 0.15)");
+      gradient.addColorStop(1, "rgba(255, 107, 107, 0)");
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, 8, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     ctx.globalAlpha = 1;
