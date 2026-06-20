@@ -1,0 +1,21 @@
+# VCS and editor metadata
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Local/runtime artifacts
+*.log
+*.tmp
+*.bak
+.cache
+node_modules
+
+# Project documents not needed by the runtime image
+*.docx
+*.md
