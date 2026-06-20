@@ -10,7 +10,7 @@ on:
       - ".github/workflows/voxel-world-acr.yml"
 
 env:
-  REGISTRY: registry.cn-shenzhen.aliyuncs.com
+  REGISTRY: crpi-xjj1zdx36ghpwjqs.cn-shenzhen.personal.cr.aliyuncs.com
   NAMESPACE: manji1233
   IMAGE_NAME: voxel-world
 
