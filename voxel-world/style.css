@@ -44,9 +44,18 @@ html, body {
 }
 .minimap-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 6px; }
 .minimap canvas { display: block; border-radius: 8px; background: #cde6b8; }
-.minimap-legend { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; font-size: 10px; color: var(--muted); }
+.minimap-legend { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; font-size: 10px; color: var(--muted); }
 .minimap-legend span { display: flex; align-items: center; gap: 5px; }
 .minimap-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
+/* 出租车图例放大一倍 */
+.minimap-legend .lg-taxi { font-size: 12px; font-weight: 700; color: #6a5a00; }
+.minimap-legend .lg-taxi i { width: 18px; height: 18px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+
+/* 昼夜切换浮动按钮（证据链面板隐藏后单独保留） */
+.night-fab {
+  position: fixed; right: 18px; top: 70px; z-index: 12;
+  padding: 8px 14px; font-size: 12px;
+}
 
 /* ── Debug HUD ── */
 .debug-hud {
@@ -228,9 +237,26 @@ body.locked .crosshair { opacity: 0.85; }
 .countdown.urgent { color: var(--coral); animation: pulse 0.6s infinite alternate; }
 @keyframes pulse { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.08); } }
 
+/* ── 乘客上车对话框 ── */
+.passenger-dialog {
+  position: fixed; left: 50%; bottom: 82px;
+  transform: translateX(-50%) translateY(10px);
+  z-index: 24; width: min(540px, calc(100vw - 36px));
+  padding: 12px 16px;
+  background: var(--paper-strong); border: 1px solid var(--hair);
+  border-radius: 18px; backdrop-filter: blur(10px);
+  box-shadow: 0 8px 28px rgba(40,70,90,0.18);
+  pointer-events: none; opacity: 0;
+  transition: opacity .22s ease, transform .22s ease;
+  font-size: 13px; line-height: 1.55; color: var(--ink);
+  text-align: center;
+}
+.passenger-dialog.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.passenger-dialog b { display: block; color: var(--green); font-size: 12px; margin-bottom: 3px; }
+
 /* ── Toasts ── */
 .toasts {
-  position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 142px; left: 50%; transform: translateX(-50%);
   z-index: 30;
   display: flex; flex-direction: column; gap: 8px; align-items: center;
   pointer-events: none; width: 300px;

@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>公平网约车 · 体素环线世界</title>
+  <title>方块出行 · 体素世界</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=20260620a" />
+  <link rel="stylesheet" href="./style.css?v=20260621g" />
   <script type="importmap">
   {
     "imports": {
@@ -25,9 +25,9 @@
   <!-- 司机小地图（左上） -->
   <div class="minimap" id="minimapWrap">
     <div class="minimap-title">司机地图</div>
-    <canvas id="minimap" width="200" height="200"></canvas>
+    <canvas id="minimap" width="220" height="220"></canvas>
     <div class="minimap-legend">
-      <span><i style="background:#ffd23f"></i>出租车</span>
+      <span class="lg-taxi"><i style="background:#ffd23f"></i>出租车</span>
       <span><i style="background:#ef6f6f"></i>候车乘客</span>
       <span><i style="background:#4caf6a"></i>目的地</span>
     </div>
@@ -41,8 +41,8 @@
     <div class="brand">
       <span class="brand-mark">衡</span>
       <div>
-        <strong>公平派单 · 体素环线</strong>
-        <small>三乘客闭环网约车世界</small>
+        <strong>方块出行</strong>
+        <small>体素网约车世界</small>
       </div>
     </div>
     <div class="zone-hud" id="zoneHud"></div>
@@ -52,8 +52,8 @@
   <!-- 限时模式送达倒计时 -->
   <div class="countdown" id="countdown" style="display:none"></div>
 
-  <!-- 治理面板：证据链 + 操作 -->
-  <aside class="hud-panel" id="govPanel">
+  <!-- 治理面板：证据链 + 操作（证据链已隐藏，仅保留昼夜切换按钮） -->
+  <aside class="hud-panel" id="govPanel" style="display:none">
     <div class="panel-head"><strong>订单证据链</strong><span id="chainStatus" class="chip blue">待校验</span></div>
     <div class="chain" id="chain"></div>
     <div class="panel-actions">
@@ -61,17 +61,20 @@
       <button class="btn" id="verifyBtn">校验证据链</button>
       <button class="btn ghost" id="tamperBtn">模拟篡改</button>
       <button class="btn ghost" id="appealBtn">发起申诉</button>
-      <button class="btn ghost" id="nightBtn">昼夜切换 (N)</button>
     </div>
   </aside>
+  <button class="btn ghost night-fab" id="nightBtn">昼夜切换 (N)</button>
 
   <!-- 派单日志 -->
   <aside class="hud-log" id="log" aria-label="派单日志"></aside>
 
   <!-- 驾驶提示 -->
   <div class="drive-hint" id="driveHint">
-    <span><b>W/S</b> 前进后退 · <b>长按W 3秒</b> 加速 · <b>A/D</b> 转向 · <b>F</b> 下车 · <b>空格</b> 手刹 · <b>V</b> 切俯视视角 · <b>T</b> 自动驾驶</span>
+    <span><b>W/S</b> 前进后退 · <b>长按W 3秒</b> 加速 · <b>A/D</b> 转向 · <b>F</b> 下车 · <b>空格</b> 手刹 · <b>V</b> 切跟车/车内/俯视 · <b>T</b> 自动驾驶</span>
   </div>
+
+  <!-- 乘客上车对话 -->
+  <div class="passenger-dialog" id="passengerDialog" aria-live="polite"></div>
 
   <!-- Toasts -->
   <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -79,8 +82,8 @@
   <!-- 入口：模式选择 -->
   <div class="overlay" id="overlay">
     <div class="overlay-card">
-      <p class="eyebrow">公平网约车 · 体素环线世界</p>
-      <h1>三乘客闭环网约车环线</h1>
+      <p class="eyebrow">方块出行 · 体素世界</p>
+      <h1>方块出行</h1>
       <p class="lead">场站出发，沿环线依次经过 <b>城郊市井 → 山谷森林 → 滨湖度假 → 返程田野</b> 四段差异化风景。靠近黄色出租车按 <b>F</b> 上车，开到候车点接客、送到其家赚金币。可自由折返，每一次派单生成可审计的证据链。</p>
       <div class="mode-choice">
         <button class="mode-btn" id="playFree">
@@ -99,7 +102,7 @@
         <li><b>左键</b> 拆方块</li>
         <li><b>右键</b> 放方块</li>
         <li><b>F</b> 上/下车</li>
-        <li><b>V</b> 驾驶俯视视角</li>
+        <li><b>V</b> 切换跟车 / 车内方向盘 / 俯视</li>
         <li><b>T</b> 自动驾驶</li>
         <li><b>N</b> 昼夜</li>
         <li><b>R</b> 重置</li>
@@ -108,6 +111,6 @@
     </div>
   </div>
 
-  <script type="module" src="./game.js?v=20260620a"></script>
+  <script type="module" src="./game.js?v=20260621p"></script>
 </body>
 </html>
